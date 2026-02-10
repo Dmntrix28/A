@@ -26,8 +26,8 @@ function sampleTextTargets(text, count, worldW, worldH) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const ratio = worldW / worldH;
-  const size = Math.max(156, Math.min(280, 230 * ratio));
-  ctx.font = `900 ${size}px "Trebuchet MS", "Segoe UI", "Arial", sans-serif`;
+  const size = Math.max(160, Math.min(292, 236 * ratio));
+  ctx.font = `900 ${size}px "Arial Black", "Segoe UI", "Arial", sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "white";
@@ -75,8 +75,10 @@ function sampleTextTargets(text, count, worldW, worldH) {
     const y = minY + Math.random() * (maxY - minY);
     const idx = ((Math.floor(y) * canvas.width + Math.floor(x)) * 4) + 3;
     if (data[idx] > 112) {
-      const nx = (x / canvas.width - 0.5) * worldW * 0.78;
-      const ny = (0.5 - y / canvas.height) * worldH * 0.66;
+      const textWidthFactor = ratio < 0.78 ? 0.92 : 0.82;
+      const textHeightFactor = ratio < 0.78 ? 0.64 : 0.66;
+      const nx = (x / canvas.width - 0.5) * worldW * textWidthFactor;
+      const ny = (0.5 - y / canvas.height) * worldH * textHeightFactor;
       const swirl = 0.9;
       targets.push({
         x: nx + (Math.random() - 0.5) * swirl,
@@ -90,7 +92,9 @@ function sampleTextTargets(text, count, worldW, worldH) {
 
 function sampleHeartTargets(count, worldW, worldH) {
   const targets = [];
-  const scale = Math.min(worldW, worldH) * 0.16;
+  const maxHalfWidth = worldW * 0.34;
+  const maxHalfHeight = worldH * 0.3;
+  const scale = Math.min(maxHalfWidth / 16, maxHalfHeight / 17);
   const contourCount = Math.floor(count * 0.45);
 
   for (let i = 0; i < contourCount; i += 1) {
