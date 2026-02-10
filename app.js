@@ -26,39 +26,63 @@ function sampleTextTargets(text, count, worldW, worldH) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const ratio = worldW / worldH;
-  const size = Math.max(130, Math.min(260, 220 * ratio));
-  ctx.font = `700 ${size}px "Brush Script MT", "Segoe Script", "Comic Sans MS", cursive`;
+  const size = Math.max(156, Math.min(280, 230 * ratio));
+  ctx.font = `900 ${size}px "Trebuchet MS", "Segoe UI", "Arial", sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "white";
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.lineWidth = Math.max(6, size * 0.055);
+  ctx.strokeStyle = "rgba(255,255,255,0.95)";
+  ctx.strokeText(text, canvas.width / 2, canvas.height / 2);
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
   const targets = [];
   let attempts = 0;
   const maxAttempts = count * 80;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (let y = 0; y < canvas.height; y += 4) {
+    for (let x = 0; x < canvas.width; x += 4) {
+      const idx = (y * canvas.width + x) * 4 + 3;
+      if (data[idx] > 100) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  if (!Number.isFinite(minX)) {
+    return targets;
+  }
+
+  const pad = 24;
+  minX = Math.max(0, minX - pad);
+  minY = Math.max(0, minY - pad);
+  maxX = Math.min(canvas.width, maxX + pad);
+  maxY = Math.min(canvas.height, maxY + pad);
 
   while (targets.length < count && attempts < maxAttempts) {
     attempts += 1;
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
+    const x = minX + Math.random() * (maxX - minX);
+    const y = minY + Math.random() * (maxY - minY);
     const idx = ((Math.floor(y) * canvas.width + Math.floor(x)) * 4) + 3;
-    if (data[idx] > 80) {
+    if (data[idx] > 112) {
       const nx = (x / canvas.width - 0.5) * worldW * 0.78;
       const ny = (0.5 - y / canvas.height) * worldH * 0.66;
-      const swirl = 2.2;
+      const swirl = 0.9;
       targets.push({
         x: nx + (Math.random() - 0.5) * swirl,
         y: ny + (Math.random() - 0.5) * swirl,
       });
     }
-  }
-
-  while (targets.length < count) {
-    targets.push({
-      x: (Math.random() - 0.5) * worldW * 0.5,
-      y: (Math.random() - 0.5) * worldH * 0.25,
-    });
   }
 
   return targets;
@@ -154,7 +178,7 @@ function ParticleScene() {
     const updateTargetsForText = (text) => {
       const worldH = 2 * Math.tan((camera.fov * Math.PI) / 360) * camera.position.z;
       const worldW = worldH * camera.aspect;
-      const shape = sampleTextTargets(text, Math.floor(count * 0.72), worldW, worldH);
+      const shape = sampleTextTargets(text, Math.floor(count * 0.8), worldW, worldH);
 
       for (let i = 0; i < count; i += 1) {
         if (i < shape.length) {
@@ -252,7 +276,7 @@ function ParticleScene() {
         const tx = targets[i].x;
         const ty = targets[i].y;
         const isShape = targets[i].mode !== "free";
-        const pull = isShape ? 0.012 : 0.0028;
+        const pull = isShape ? 0.017 : 0.0028;
 
         velocities[i].x += (tx - px) * pull + (Math.random() - 0.5) * 0.02;
         velocities[i].y += (ty - py) * pull + (Math.random() - 0.5) * 0.02;
