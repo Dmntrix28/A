@@ -1,0 +1,6 @@
+{
+  "name": "a",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Sitio estático con React + Three.js para GitHub Pages"
+}
